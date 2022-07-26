@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/providers/auth_provider.dart';
-import 'package:my_app/screens/login_screen.dart';
-import 'package:my_app/screens/overview_screen.dart';
 import 'package:my_app/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -18,8 +16,8 @@ class AppDrawer extends StatelessWidget {
         ),
         const Divider(),
         ListTile(
-          leading: Icon(Icons.shop),
-          title: Text("Shop"),
+          leading: const Icon(Icons.shop),
+          title: const Text("Shop"),
           onTap: () {
             print("isAuth " + auth.isAuth.toString());
             Navigator.of(context).pushReplacementNamed("/");
@@ -27,8 +25,8 @@ class AppDrawer extends StatelessWidget {
         ),
         const Divider(),
         ListTile(
-          leading: Icon(Icons.shop),
-          title: Text("Settings"),
+          leading: const Icon(Icons.settings),
+          title: const Text("Settings"),
           onTap: () {
             Navigator.of(context)
                 .pushReplacementNamed(SettingsScreen.routeName);
@@ -36,8 +34,8 @@ class AppDrawer extends StatelessWidget {
         ),
         const Divider(),
         ListTile(
-          leading: Icon(Icons.exit_to_app),
-          title: Text("Logout"),
+          leading: const Icon(Icons.exit_to_app),
+          title: const Text("Logout"),
           onTap: () {
             Navigator.of(context).pop();
             Provider.of<AuthProvider>(context, listen: false).logout();
