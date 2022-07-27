@@ -15,6 +15,7 @@ class AddProductScreen extends StatefulWidget {
 
 class _AddProductScreen_State extends State<AddProductScreen> {
   var inputText = "";
+  late TextEditingController controller;
 
   @override
   void dispose() {
@@ -99,134 +100,194 @@ class _AddProductScreen_State extends State<AddProductScreen> {
         backgroundColor: Colors.red,
       ),
       body: Container(
-        color: const Color(0xffFCA914),
         height: double.infinity,
         width: double.infinity,
-        alignment: Alignment.topLeft,
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-        child: Card(
-          elevation: 0,
-          color: const Color(0xffFDC055),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          child: SizedBox(
-            height: 50,
-            width: double.infinity,
-            child: RawAutocomplete(
-              displayStringForOption: ((Product option) => option.title),
-              optionsViewBuilder: (BuildContext context,
-                  AutocompleteOnSelected<Product> onSelected,
-                  Iterable<Product> options) {
-                return Container(
-                  child: ListView.builder(
-                    itemCount: options.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final Product option = options.elementAt(index);
-                      return Container(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 60, 0),
-                        child: Card(
-                          elevation: 0,
-                          color: const Color(0xffFDC055),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                  child: Text(
-                                    option.title,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                        fontSize: 18),
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.add),
-                                onPressed: () {
-                                  onSelected(option);
-                                  products.moveProductFromListToList(
-                                      option.id,
-                                      GroupType.alreadyBought,
-                                      GroupType.wanted,
-                                      auth.name);
-                                  Navigator.pop(context);
-                                },
-                              ),
-                            ],
+        color: const Color(0xffFCA914),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                return Autocomplete<Product>(
+                  optionsBuilder: (textEditingValue) {
+                    List<Product> allProducts = products.itemsAlreadyBought;
+                    List<Product> allOptions =
+                        allProducts.where((Product option) {
+                      return option.title
+                          .contains(textEditingValue.text.toLowerCase());
+                    }).toList();
+                    bool cut = false;
+                    if (allOptions.length >= 5) {
+                      cut = true;
+                    }
+                    if (cut) {
+                      return allOptions.sublist(0, 5);
+                    } else {
+                      return allOptions;
+                    }
+                  },
+                  optionsViewBuilder: (context, onSelected, options) {
+                    return Align(
+                      alignment: Alignment.topLeft,
+                      child: Material(
+                        child: Container(
+                          width: constraints.biggest.width,
+                          height: options.length * 35,
+                          child: ListView.builder(
+                            physics: NeverScrollableScrollPhysics(),
+                            padding: EdgeInsets.zero,
+                            itemBuilder: (context, index) {
+                              final Product option = options.elementAt(index);
+
+                              return Container(
+                                height: 35,
+                                color: Color(0xffFDC055),
+                                child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          10, 0, 0, 0),
+                                      child: Text(option.title),
+                                    )),
+                              );
+                            },
+                            itemCount: options.length,
                           ),
                         ),
-                      );
-                    },
-                  ),
-                );
-              },
-              optionsBuilder: (TextEditingValue textEditingValue) {
-                List<Product> allProducts = products.itemsAlreadyBought;
-                return allProducts.where((Product option) {
-                  return option.title
-                      .contains(textEditingValue.text.toLowerCase());
-                });
-              },
-              fieldViewBuilder: (BuildContext context,
-                  TextEditingController textEditingController,
-                  FocusNode focusNode,
-                  VoidCallback onFieldSubmitted) {
-                return SizedBox(
-                  height: 50,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Card(
-                          elevation: 0,
-                          child: TextFormField(
-                            controller: textEditingController,
-                            focusNode: focusNode,
-                            onFieldSubmitted: (String value) {
-                              checkListsWithObject(
-                                  value, context, true, onFieldSubmitted);
-                            },
-                            onChanged: (text) {
-                              inputText = text;
-                            },
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                fontSize: 18),
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              hintText: "Enter a product",
-                              hintStyle: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                  fontSize: 18),
-                              focusColor: Colors.green,
-                              fillColor: Color(0xffFDC055),
-                              filled: true,
+                      ),
+                    );
+                  },
+                  fieldViewBuilder: (context, textEditingController, focusNode,
+                      onFieldSubmitted) {
+                    controller = textEditingController;
+                    return Container(
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(15),
+                          topRight: Radius.circular(15),
+                        ),
+                        color: Color(0xffFDC055),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: controller,
+                              focusNode: focusNode,
                             ),
                           ),
-                        ),
+                          IconButton(
+                            onPressed: () {
+                              checkListsWithObject(
+                                  inputText, context, false, null);
+                            },
+                            icon: Icon(Icons.add),
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () {
-                          checkListsWithObject(inputText, context, false, null);
-                        },
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 }
+          // Autocomplete<Product>(
+          //   optionsBuilder: (TextEditingValue textEditingValue) {
+          //     List<Product> allProducts = products.itemsAlreadyBought;
+          //     List<Product> allOptions = allProducts.where((Product option) {
+          //       return option.title
+          //           .contains(textEditingValue.text.toLowerCase());
+          //     }).toList();
+          //     bool cut = false;
+          //     if (allOptions.length >= 5) {
+          //       cut = true;
+          //     }
+          //     if (cut) {
+          //       return allOptions.sublist(0, 5);
+          //     } else {
+          //       return allOptions;
+          //     }
+          //   },
+          //   optionsViewBuilder: (context, onSelected, options) {
+          //     return Material(
+          //       shape: const RoundedRectangleBorder(
+          //         borderRadius: BorderRadius.only(
+          //             bottomLeft: Radius.circular(15),
+          //             bottomRight: Radius.circular(15)),
+          //       ),
+          //       color: Colors.grey,
+          //       child: ListView.separated(
+          //           itemBuilder: (BuildContext context, int index) {
+          //             final Product option = options.elementAt(index);
+          //             print(index);
+          //             return ListTile(
+          //               tileColor: Colors.green,
+          //               title: Text(option.title),
+          //             );
+          //           },
+          //           separatorBuilder: (context, index) => const Divider(),
+          //           itemCount: options.length),
+          //       child: SizedBox(
+          //         width: constraints.biggest.width,
+          //         height: options.length * 40,
+          //         child: ListView.builder(
+          //           itemCount: options.length,
+          //           itemBuilder: (BuildContext context, int index) {
+          //             final Product option = options.elementAt(index);
+          //             return Container(
+          //               child: Row(
+          //                 children: [
+          //                   Expanded(
+          //                     child: Padding(
+          //                       padding:
+          //                           const EdgeInsets.fromLTRB(10, 0, 0, 0),
+          //                       child: Text(
+          //                         option.title,
+          //                         style: const TextStyle(
+          //                             fontWeight: FontWeight.bold,
+          //                             color: Colors.black,
+          //                             fontSize: 18),
+          //                       ),
+          //                     ),
+          //                   ),
+          //                   IconButton(
+          //                     icon: const Icon(Icons.add),
+          //                     onPressed: () {
+          //                       onSelected(option);
+          //                       products.moveProductFromListToList(
+          //                           option.id,
+          //                           GroupType.alreadyBought,
+          //                           GroupType.wanted,
+          //                           auth.name);
+          //                       Navigator.pop(context);
+          //                     },
+          //                   ),
+          //                 ],
+          //               ),
+          //             );
+          //           },
+          //         ),
+          //       ),
+          //     );
+          //   },
+          //   fieldViewBuilder: (context, textEditingController, focusNode,
+          //       onFieldSubmitted) {
+          //     return const Card(
+          //       elevation: 0,
+          //       color: Color(0xffFDC055),
+          //       shape: RoundedRectangleBorder(
+          //         borderRadius: BorderRadius.only(
+          //           topLeft: Radius.circular(15),
+          //           topRight: Radius.circular(15),
+          //         ),
+          //       ),
+          //       child: TextField(),
+          //     );
+          //   },
+          // ),
