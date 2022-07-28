@@ -179,6 +179,9 @@ class _LoginScreenState extends State<LoginScreen>
                                       _authData[constants.password] =
                                           value as String;
                                     },
+                                    obscureText: true,
+                                    enableSuggestions: false,
+                                    autocorrect: false,
                                   ),
                                 ),
                                 Padding(
@@ -250,6 +253,9 @@ class _LoginScreenState extends State<LoginScreen>
                                     _authData[constants.password] =
                                         value as String;
                                   },
+                                  obscureText: true,
+                                  enableSuggestions: false,
+                                  autocorrect: false,
                                 ),
                               ),
                               TextButton(

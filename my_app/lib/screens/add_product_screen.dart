@@ -3,6 +3,7 @@ import 'package:my_app/models/group_type.dart';
 import 'package:my_app/models/product.dart';
 import 'package:my_app/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:substring_highlight/substring_highlight.dart';
 
 import '../providers/products_provider.dart';
 
@@ -14,7 +15,6 @@ class AddProductScreen extends StatefulWidget {
 }
 
 class _AddProductScreen_State extends State<AddProductScreen> {
-  var inputText = "";
   late TextEditingController controller;
 
   @override
@@ -35,6 +35,7 @@ class _AddProductScreen_State extends State<AddProductScreen> {
     bool inSoldOut = false;
     bool inBought = false;
     for (Product product in products.itemsWanted) {
+      print("Compare: " + product.title + " with: " + value);
       if (product.title.toLowerCase() == value.toLowerCase()) {
         inWanted = true;
         break;
@@ -52,6 +53,10 @@ class _AddProductScreen_State extends State<AddProductScreen> {
         break;
       }
     }
+
+    print("inWanted: " + inWanted.toString());
+    print("inSoldOut: " + inSoldOut.toString());
+    print("inBought: " + inBought.toString());
 
     if (inWanted) {
       _showMessage("Product already in list.");
@@ -116,6 +121,11 @@ class _AddProductScreen_State extends State<AddProductScreen> {
                       return option.title
                           .contains(textEditingValue.text.toLowerCase());
                     }).toList();
+                    allOptions.sort((Product a, Product b) {
+                      return a.title
+                          .toLowerCase()
+                          .compareTo(b.title.toLowerCase());
+                    });
                     bool cut = false;
                     if (allOptions.length >= 5) {
                       cut = true;
@@ -130,25 +140,63 @@ class _AddProductScreen_State extends State<AddProductScreen> {
                     return Align(
                       alignment: Alignment.topLeft,
                       child: Material(
-                        child: Container(
+                        child: SizedBox(
                           width: constraints.biggest.width,
                           height: options.length * 35,
                           child: ListView.builder(
-                            physics: NeverScrollableScrollPhysics(),
+                            physics: const NeverScrollableScrollPhysics(),
                             padding: EdgeInsets.zero,
                             itemBuilder: (context, index) {
                               final Product option = options.elementAt(index);
-
                               return Container(
                                 height: 35,
-                                color: Color(0xffFDC055),
-                                child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          10, 0, 0, 0),
-                                      child: Text(option.title),
-                                    )),
+                                color: index % 2 == 1
+                                    ? const Color(0xffFDC055)
+                                    : Color.fromARGB(255, 231, 154, 22),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            flex: 1,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      10, 0, 0, 0),
+                                              child: SubstringHighlight(
+                                                text: option.title,
+                                                term: controller.text,
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                0, 0, 10, 0),
+                                            child: SizedBox(
+                                              height: 35,
+                                              width: 35,
+                                              child: IconButton(
+                                                padding: EdgeInsets.zero,
+                                                onPressed: () {
+                                                  checkListsWithObject(
+                                                    option.title,
+                                                    context,
+                                                    true,
+                                                    null,
+                                                  );
+                                                },
+                                                icon: const Icon(Icons.add,
+                                                    size: 25.0),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               );
                             },
                             itemCount: options.length,
@@ -175,14 +223,18 @@ class _AddProductScreen_State extends State<AddProductScreen> {
                             child: TextField(
                               controller: controller,
                               focusNode: focusNode,
+                              onSubmitted: (value) {
+                                checkListsWithObject(
+                                    value, context, false, null);
+                              },
                             ),
                           ),
                           IconButton(
                             onPressed: () {
                               checkListsWithObject(
-                                  inputText, context, false, null);
+                                  controller.text, context, false, null);
                             },
-                            icon: Icon(Icons.add),
+                            icon: const Icon(Icons.add),
                           ),
                         ],
                       ),
