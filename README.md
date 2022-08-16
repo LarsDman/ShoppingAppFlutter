@@ -12,6 +12,8 @@ The backend works with Firebase. The products of the shopping list are stored in
 
 #### 1.1 Registration for a user:
 
+![](https://github.com/LarsDman/ShoppingAppFlutter/blob/main/Gifs/Registration.gif)
+
 #### 1.2 Login & Authentication for a user:
 
 ### 2. Shopping list:
