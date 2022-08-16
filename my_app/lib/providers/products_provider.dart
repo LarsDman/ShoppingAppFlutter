@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:my_app/constants/constants.dart' as constants;
 import 'package:my_app/models/group_type.dart';
@@ -339,12 +341,14 @@ class ProductsProvider with ChangeNotifier {
 
   Future<void> fetchProducts() async {
     final urlBase = Uri.parse(constants_links.urlBase + "?auth=$authToken");
+    log("fetch");
     try {
       final response = await http.get(urlBase);
       final responseData = json.decode(response.body) as List<dynamic>;
       final List<Product> loadedWantedProducts = [];
       final List<Product> loadedSoldOutProducts = [];
       final List<Product> loadedAlreadyBoughtProducts = [];
+      log(responseData.toString());
       for (var subList in responseData) {
         if (subList != null) {
           for (var item in subList) {
